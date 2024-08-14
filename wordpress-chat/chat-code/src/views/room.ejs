@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chat App</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+        :root {
+            --main-darklg: #1d2635;
+            --main-dark: #161d29;
+            --primary-color: #2f80ec;
+            --main-light: #eeeeee;
+            font-family: "Poppins", sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 8vh;
+            position: relative;
+            width: 100%;
+            background-color: var(--main-darklg);
+        }
+
+        .logo > h3 {
+            color: var(--main-light);
+        }
+
+        .main {
+            overflow: hidden;
+            height: 92vh;
+            display: flex;
+        }
+
+        .main__left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #242f41;
+        }
+
+        .options__button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--primary-color);
+            height: 50px;
+            border-radius: 5px;
+            color: var(--main-light);
+            font-size: 1.2rem;
+            width: 50px;
+            margin: 0 0.5rem;
+        }
+
+        .main__chat_window {
+            flex-grow: 1;
+            overflow-y: scroll;
+        }
+
+        .main__chat_window::-webkit-scrollbar {
+            display: none;
+        }
+
+        .main__message_container {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main__message_container > input {
+            height: 50px;
+            flex: 1;
+            font-size: 1rem;
+            border-radius: 5px;
+            padding-left: 20px;
+            border: none;
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            margin: 1.5rem;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message > b {
+            color: #eeeeee;
+            display: flex;
+            align-items: center;
+            text-transform: capitalize;
+        }
+
+        .message > b > i {
+            margin-right: 0.7rem;
+            font-size: 1.5rem;
+        }
+
+        .message > span {
+            background-color: #eeeeee;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .header__back {
+            display: none;
+            position: absolute;
+            font-size: 1.3rem;
+            top: 17px;
+            left: 28px;
+            color: #fff;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://kit.fontawesome.com/c939d0e917.js"></script>
+    <script>
+        const SENDER_ID = "<%= senderId %>";
+        const RECEIVER_ID = "<%= receiverId %>";
+        let ROOM_ID = "";
+    </script>
+</head>
+<body>
+<div class="header">
+    <div class="logo">
+        <div class="header__back">
+            <i class="fas fa-angle-left"></i>
+        </div>
+        <h3>Chat</h3>
+    </div>
+</div>
+<div class="main">
+    <div class="main__left">
+        <div class="main__chat_window">
+            <div class="messages">
+
+            </div>
+        </div>
+        <div class="main__message_container">
+            <input id="chat_message" type="text" autocomplete="off" placeholder="Type message here...">
+            <div id="send" class="options__button">
+                <i class="fa fa-paper-plane" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    const socket = io("/");
+
+    let text = document.querySelector("#chat_message");
+    let send = document.getElementById("send");
+    let messages = document.querySelector(".messages");
+
+    socket.emit('USER_LIST', SENDER_ID);
+    socket.on('USER_LIST_RESPONSE', (res) => {
+      
+    })
+
+    socket.emit("JOIN_ROOM", SENDER_ID, RECEIVER_ID);
+
+    socket.on("JOIN_ROOM_RESPONSE", (res) => {
+     
+        res = JSON.parse(res);
+       
+        ROOM_ID = res.status == true ? res.data.room_id : '';
+      
+        // socket.emit('CHAT_DETAIL', ROOM_ID, SENDER_ID, RECEIVER_ID);
+        socket.emit('CHAT_DETAIL_NEW', ROOM_ID, SENDER_ID, RECEIVER_ID);
+    });
+
+    socket.on('CHAT_DETAIL_RESPONSE', (res) => {
+        // console.log(res);
+    })
+    socket.on('CHAT_DETAIL_RESPONSE_NEW', (res) => {
+      console.log(SENDER_ID)
+        res = JSON.parse(res)
+        console.log(res.status,"string");
+        if (res.status == true) {
+            console.log(res.data.chatData,"if");
+            let string='';
+            for (const iterator of res.data.chatData) {
+                string = string + "Date :"+iterator.date;
+                    for (const iterator1 of iterator.chatList) {
+                       string =string + `<div class="message">
+                        <b><i class="far fa-user-circle"></i>${iterator1.sender_id} <span> ${iterator1.sender_id === SENDER_ID ? "me" : iterator1.user.name}</span> </b>
+                        <span>${iterator1.message}</span>
+                    </div>`;
+                    }
+                   
+                  
+               
+            }
+            messages.innerHTML=string;
+           
+        } else {
+           
+        }
+    })
+
+    send.addEventListener("click", (e) => {
+        if (text.value.length !== 0) {
+            const data = {
+                room_id: ROOM_ID,
+                sender_id: SENDER_ID,
+                receiver_id: RECEIVER_ID,
+                message: text.value,
+                type:"text"
+            }
+            socket.emit("NEW_MESSAGE", data);
+            socket.emit("userUnreadMessage", 366);
+            text.value = "";
+        }
+    });
+
+    text.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && text.value.length !== 0) {
+            const data = {
+                room_id: ROOM_ID,
+                sender_id: SENDER_ID,
+                receiver_id: RECEIVER_ID,
+                message: text.value,
+                type: "text"
+            }
+            console.log("new message")
+            socket.emit("NEW_MESSAGE", data);
+            text.value = "";
+        }
+    });
+
+    socket.on("NEW_MESSAGE_RESPONSE", (res) => {
+       
+        res = JSON.parse(res)
+       /*  if (res.status === true) {
+            if (res.data.room_id == ROOM_ID) {
+                messages.innerHTML = messages.innerHTML + `<div class="message">
+                    <b><i class="far fa-user-circle"></i> <span> ${res.data.sender_id === SENDER_ID ? "me" : res.data.user.name}</span> </b>
+                    <span>${res.data.message}</span>
+                </div>`;
+            } else {
+               
+            }
+        } else {
+           
+        } */
+          
+    });
+    
+    socket.on("userUnreadMessageResponse", (res) => {
+      
+       
+    });
+</script>
+</html>

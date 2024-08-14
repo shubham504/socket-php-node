@@ -1,0 +1,38 @@
+{
+  "name": "Stuardly",
+  "version": "1.0.0",
+  "description": "Stuardly live chat",
+  "main": "./src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./src/index.js",
+    "dev": "nodemon ./src/index.js"
+  },
+  "author": "Stuardly",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "aws-sdk": "^2.1474.0",
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "date-fns": "^2.30.0",
+    "ejs": "^3.1.9",
+    "express": "^4.17.1",
+    "fcm-node": "^1.6.1",
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.3",
+    "multer": "^1.4.3",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.22",
+    "password-hash": "^1.2.2",
+    "pdf-creator-node": "^2.2.4",
+    "sequelize": "^6.23.1",
+    "socket.io": "^4.5.2"
+  }
+}
